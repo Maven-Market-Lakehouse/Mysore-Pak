@@ -1,0 +1,29 @@
+bundle:
+  name: maven-market-lakehouse
+
+variables:
+  workspace_root:
+    default: /Workspace/Shared/maven-market-lakehouse
+
+resources:
+  pipelines:
+    maven_market_dlt:
+      name: maven-market-dlt-main
+      catalog: maven_market_uc
+      target: bronze
+      channel: CURRENT
+      photon: true
+      continuous: true
+      development: false
+      libraries:
+        - file:
+            path: ./src/dlt/medallion_pipeline.py
+      configuration:
+        config.path: ${workspace.file_path}/config/config.yml
+
+targets:
+  main:
+    mode: production
+    workspace:
+      host: ${env.DATABRICKS_HOST}
+      root_path: ${var.workspace_root}
