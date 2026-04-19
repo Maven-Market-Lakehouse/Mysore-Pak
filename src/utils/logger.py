@@ -1,5 +1,6 @@
 import logging
 
+
 def get_logger():
     logger = logging.getLogger("maven_logger")
     logger.setLevel(logging.INFO)
