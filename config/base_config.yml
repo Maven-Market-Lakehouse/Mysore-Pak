@@ -2,31 +2,36 @@ storage:
   container: "historicaldata"
   storage_account: "sgmavenmarket"
 
-datasets:
-  transactions:
-    path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/transactions/"
-    checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/transactions/"
-    table: "maven_market_uc.bronze.transactions"
+catalog: "maven_market_uc"
+bronze_schema: "bronze"
+silver_schema: "silver"
+gold_schema: "gold"
+audit_schema: "audit"
 
-  returns:
-    path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/returns/"
-    checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/returns/"
-    table: "maven_market_uc.bronze.returns"
+transactions:
+  path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/transactions/"
+  checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/transactions/"
+  table: "maven_market_uc.bronze.bronze_raw_transactions"
 
-  stores:
-    path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/stores/"
-    checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/stores/"
-    table: "maven_market_uc.bronze.stores"
+returns:
+  path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/returns/"
+  checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/returns/"
+  table: "maven_market_uc.bronze.bronze_raw_returns"
 
-  regions:
-    path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/regions/"
-    checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/regions/"
-    table: "maven_market_uc.bronze.regions"
+stores:
+  path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/stores/"
+  checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/stores/"
+  table: "maven_market_uc.bronze.bronze_raw_stores"
+
+regions:
+  path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/regions/"
+  checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/regions/"
+  table: "maven_market_uc.bronze.bronze_raw_regions"
 
   calendar:
     path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/calendar/"
     checkpoint: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net/checkpoints/calendar/"
-    table: "maven_market_uc.bronze.calendar"
+    table: "maven_market_uc.bronze.bronze_raw_calendar"
 
 kafka:
   scope: "mongo-kafka-connector"

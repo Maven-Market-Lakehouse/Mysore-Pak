@@ -1,0 +1,5 @@
+environments:
+  dev:
+    catalog: "maven_market_uc"
+  prod:
+    catalog: "maven_market_prod_uc"

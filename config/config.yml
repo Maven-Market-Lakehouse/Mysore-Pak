@@ -1,99 +1,206 @@
-project:
-  name: maven-market-lakehouse
-  environment: main
-  owner_team: data-engineering
+# env: "dev"
 
-databricks:
-  host: https://adb-<workspace-id>.<region>.azuredatabricks.net
-  workspace_root: /Workspace/Shared/maven-market-lakehouse
-  secret_scope: maven-market-kv-scope
+# # BASE STORAGE
+# base_path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net"
 
-unity_catalog:
-  catalog: maven_market_uc
-  schemas:
-    bronze: bronze
-    silver: silver
-    gold: gold
-    audit: audit
-  groups:
-    data_engineers: grp_data_engineers
-    analysts: grp_analysts
-    regional_managers: grp_regional_managers
-    admins: grp_data_platform_admins
+# # CATALOG (ENV-AWARE)
+# catalog: "maven_market_uc"
 
-storage:
-  adls:
-    raw_base_path: abfss://raw@<storage-account>.dfs.core.windows.net/maven_market
+# catalog_prod: "maven_market_prod_uc"
 
-sources:
-  csv:
-    format: csv
-    options:
-      header: true
-      inferSchema: false
-      rescueDataColumn: _rescued_data
-    datasets:
-      transactions:
-        source_path: ${storage.adls.raw_base_path}/transactions
-        schema: transaction_id STRING, customer_id STRING, product_id STRING, store_id STRING, quantity INT, unit_price DECIMAL(10,2), transaction_ts TIMESTAMP
-        target_table: maven_market_uc.bronze.transactions_bronze
-      customers:
-        source_path: ${storage.adls.raw_base_path}/customers
-        schema: customer_id STRING, first_name STRING, last_name STRING, email STRING, region_id STRING, updated_at TIMESTAMP
-        target_table: maven_market_uc.bronze.customers_bronze
-      regions:
-        source_path: ${storage.adls.raw_base_path}/regions
-        schema: region_id STRING, region_name STRING, country STRING
-        target_table: maven_market_uc.bronze.regions_bronze
+# # SCHEMAS
+# bronze_schema: "bronze"
+# silver_schema: "silver"
+# gold_schema: "gold"
+# audit_schema: "audit"
 
-  mongodb:
-    format: mongodb
-    options:
-      spark.mongodb.read.connection.uri: mongodb+srv://${secrets.mongo-username}:${secrets.mongo-password}@<cluster-url>/admin
-      spark.mongodb.read.database: maven_market
-      spark.mongodb.read.collection: products
-    target_table: maven_market_uc.bronze.products_bronze
+# # TABLE NAMES
+# bronze_transactions: "bronze_raw_transactions"
+# bronze_returns: "bronze_raw_returns"
+# bronze_stores: "bronze_raw_stores"
+# bronze_regions: "bronze_raw_regions"
+# bronze_calendar: "bronze_raw_calendar"
+# bronze_customers: "bronze_raw_customers"
+# bronze_products: "bronze_raw_products"
 
-  kafka:
-    format: kafka
-    options:
-      kafka.bootstrap.servers: <bootstrap-server>:9092
-      subscribe: orders,inventory
-      startingOffsets: latest
-      failOnDataLoss: false
-      kafka.security.protocol: SASL_SSL
-      kafka.sasl.mechanism: PLAIN
-      kafka.sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username='${secrets.kafka-username}' password='${secrets.kafka-password}';
-    target_table: maven_market_uc.bronze.kafka_events_bronze
+# # PATHS (RELATIVE)
+# transactions_path: "/transactions/"
+# returns_path: "/returns/"
+# stores_path: "/stores/"
+# regions_path: "/regions/"
+# calendar_path: "/calendar/"
 
-dlt:
-  pipeline_name: maven_market_dlt
-  continuous: true
-  expectations:
-    valid_quantity: quantity > 0
-    valid_price: unit_price >= 0
+# # CHECKPOINTS
+# transactions_checkpoint: "/checkpoints/transactions/"
+# returns_checkpoint: "/checkpoints/returns/"
+# stores_checkpoint: "/checkpoints/stores/"
+# regions_checkpoint: "/checkpoints/regions/"
+# calendar_checkpoint: "/checkpoints/calendar/"
 
-tables:
-  silver:
-    transactions: maven_market_uc.silver.transactions_silver
-    customers: maven_market_uc.silver.customers_silver
-    products: maven_market_uc.silver.products_silver
-    inventory_events: maven_market_uc.silver.inventory_events_silver
-  gold:
-    fact_sales: maven_market_uc.gold.fact_sales
-    dim_customer: maven_market_uc.gold.dim_customer
-    dim_product: maven_market_uc.gold.dim_product
-    dim_store: maven_market_uc.gold.dim_store
+# # KAFKA
+# kafka_scope: "mongo-kafka-connector"
+# kafka_bootstrap_key: "kafka-bootstrap"
+# kafka_api_key_name: "kafka-api-key"
+# kafka_api_secret_name: "kafka-api-secret"
 
-logging:
-  level: INFO
-  audit_table: maven_market_uc.audit.audit_logs
-  app_name: maven_market_lakehouse
+# orders_topic: "orders"
+# inventory_topic: "inventory"
 
-cluster_policy:
-  name: maven-market-cost-governance
-  max_workers: 2
-  autotermination_minutes: 30
-  node_type_allowlist:
-    - Standard_F4s_v2
-    - Standard_D4s_v5
+# # LOGGING
+# audit_table: "audit_logs"
+
+# ---------------------------
+# ENV
+# ---------------------------
+env: "dev"
+
+# ---------------------------
+# STORAGE
+# ---------------------------
+base_path: "abfss://historicaldata@sgmavenmarket.dfs.core.windows.net"
+
+# ---------------------------
+# CATALOG (ENV-AWARE)
+# ---------------------------
+catalog: "maven_market_uc"
+catalog_prod: "maven_market_prod_uc"
+
+# ---------------------------
+# SCHEMAS
+# ---------------------------
+bronze_schema: "bronze"
+silver_schema: "silver"
+gold_schema: "gold"
+audit_schema: "audit"
+
+# ---------------------------
+# TABLE NAMES (BRONZE)
+# ---------------------------
+bronze_transactions: "bronze_raw_transactions"
+bronze_returns: "bronze_raw_returns"
+bronze_stores: "bronze_raw_stores"
+bronze_regions: "bronze_raw_regions"
+bronze_calendar: "bronze_raw_calendar"
+bronze_customers: "bronze_customers"
+bronze_products: "bronze_products"
+bronze_orders: "bronze_raw_orders"
+bronze_inventory: "bronze_raw_inventory"
+
+# ---------------------------
+# PATHS (RELATIVE)
+# ---------------------------
+transactions_path: "/transactions/"
+returns_path: "/returns/"
+stores_path: "/stores/"
+regions_path: "/regions/"
+calendar_path: "/calendar/"
+
+# ---------------------------
+# CHECKPOINTS
+# ---------------------------
+transactions_checkpoint: "/checkpoints/transactions/"
+returns_checkpoint: "/checkpoints/returns/"
+stores_checkpoint: "/checkpoints/stores/"
+regions_checkpoint: "/checkpoints/regions/"
+calendar_checkpoint: "/checkpoints/calendar/"
+
+# ---------------------------
+# KAFKA CONFIG
+# ---------------------------
+kafka_scope: "mongo-kafka-connector"
+kafka_bootstrap_key: "kafka-bootstrap"
+kafka_api_key_name: "kafka-api-key"
+kafka_api_secret_name: "kafka-api-secret"
+
+orders_topic: "orders"
+inventory_topic: "inventory"
+
+# ---------------------------
+# INGESTION SOURCE (STAGE 2/4)
+# ---------------------------
+transactions_source: "adls"
+returns_source: "adls"
+stores_source: "adls"
+regions_source: "adls"
+calendar_source: "adls"
+
+customers_source: "mongodb"
+products_source: "mongodb"
+
+orders_source: "kafka"
+inventory_source: "kafka"
+
+# ---------------------------
+# PRIMARY KEYS (CRITICAL)
+# ---------------------------
+customers_pk: "customer_id"
+products_pk: "product_id"
+stores_pk: "store_id"
+transactions_pk: "transaction_id"
+returns_pk: "return_id"
+
+# ---------------------------
+# SCD TYPE 2 CONFIG
+# ---------------------------
+customers_scd_columns:
+  - customer_name
+
+products_scd_columns:
+  - product_name
+
+stores_scd_columns:
+  - store_name
+  - region_id
+
+# ---------------------------
+# FOREIGN KEY RELATIONSHIPS
+# ---------------------------
+fk_transactions: "product_id,customer_id,store_id"
+fk_returns: "product_id,store_id"
+fk_stores: "region_id"
+fk_orders: "customer_id"
+fk_inventory: "product_id"
+
+# ---------------------------
+# RECORD STATUS STANDARDIZATION
+# ---------------------------
+record_status_valid: "valid"
+record_status_invalid: "invalid"
+record_status_quarantined: "quarantined"
+record_status_cleaned: "cleaned"
+
+# ---------------------------
+# FAILURE TYPES (QUARANTINE)
+# ---------------------------
+failure_expectation: "expectation_failure"
+failure_fk: "fk_failure"
+failure_schema: "schema_error"
+
+# ---------------------------
+# DEFAULT VALUES (SAFETY)
+# ---------------------------
+default_ingestion_source_adls: "adls"
+default_ingestion_source_kafka: "kafka"
+default_ingestion_source_mongo: "mongodb"
+
+default_record_status: "cleaned"
+
+# ---------------------------
+# AUDIT & LOGGING
+# ---------------------------
+pipeline_name: "maven_market_pipeline"
+
+audit_table: "audit_logs"
+dq_metrics_table: "data_quality_metrics"
+schema_drift_table: "schema_drift_logs"
+consistency_table: "cross_table_checks"
+
+enable_audit_logging: true
+enable_dq_metrics: true
+enable_schema_drift: true
+enable_cross_table_checks: true
+
+# ---------------------------
+# SILVER TABLE LIST (OPTIONAL BUT USEFUL)
+# ---------------------------
+silver_tables: "silver_transactions,silver_returns,silver_stores,silver_regions,silver_calendar,silver_customers,silver_products,silver_dim_customers,silver_dim_products,silver_dim_stores"
