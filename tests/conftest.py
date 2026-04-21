@@ -1,0 +1,17 @@
+import pytest
+from pyspark.sql import SparkSession
+import yaml
+
+@pytest.fixture(scope="session")
+def spark():
+    return SparkSession.builder \
+        .appName("maven-market-tests") \
+        .getOrCreate()
+
+@pytest.fixture(scope="session")
+def config():
+    with open("/Workspace/maven_market/Mysore-Pak/config/config.yml") as f:
+        return yaml.safe_load(f)
+
+def tbl(config, layer, name):
+    return f"{config['catalog']}.{config[f'{layer}_schema']}.{config[name]}"

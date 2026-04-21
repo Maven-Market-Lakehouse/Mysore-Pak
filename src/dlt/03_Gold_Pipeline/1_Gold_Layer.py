@@ -49,7 +49,6 @@ def dim_product():
     return (
         dlt.read(silver("silver_scd_products"))
         .filter(col("__END_AT").isNull())
-
         .select(
             col("product_id"),
             col("product_name"),
@@ -281,36 +280,33 @@ def fact_returns():
 
 # COMMAND ----------
 
-# MAGIC %skip
-# MAGIC @dlt.table(
-# MAGIC     name=f"{catalog}.{config['gold_schema']}.agg_daily_sales",
-# MAGIC     comment="Daily sales by store",
-# MAGIC     table_properties={
-# MAGIC         "delta.liquidClusteredColumns": "transaction_date,store_id"
-# MAGIC     }
-# MAGIC )
-# MAGIC def agg_daily_sales():
-# MAGIC
-# MAGIC     sales = dlt.read(f"{catalog}.{config['gold_schema']}.fact_sales")
-# MAGIC     stores = dlt.read(f"{catalog}.{config['gold_schema']}.dim_store")
-# MAGIC
-# MAGIC     return (
-# MAGIC         sales
-# MAGIC         .groupBy("transaction_date", "store_id")
-# MAGIC         .agg(
-# MAGIC             sum("quantity").alias("total_units"),
-# MAGIC             sum("total_revenue").alias("total_revenue"),
-# MAGIC             sum("total_cost").alias("total_cost"),
-# MAGIC             sum("total_profit").alias("total_profit"),
-# MAGIC             countDistinct("customer_id").alias("unique_customers"),
-# MAGIC             count("*").alias("total_transactions")
-# MAGIC         )
-# MAGIC         .join(stores, "store_id", "left")
-# MAGIC         .withColumn(
-# MAGIC             "avg_transaction_value",
-# MAGIC             round(col("total_revenue") / col("total_transactions"), 2)
-# MAGIC         )
-# MAGIC     )
+
+@dlt.table(
+    name=f"{catalog}.{config['gold_schema']}.agg_daily_sales",
+    comment="Daily sales by store"
+)
+def agg_daily_sales():
+
+    sales = dlt.read(f"{catalog}.{config['gold_schema']}.fact_sales")
+    stores = dlt.read(f"{catalog}.{config['gold_schema']}.dim_store")
+
+    return (
+        sales
+        .groupBy("transaction_date", "store_id")
+        .agg(
+            sum("quantity").alias("total_units"),
+            sum("total_revenue").alias("total_revenue"),
+            sum("total_cost").alias("total_cost"),
+            sum("total_profit").alias("total_profit"),
+            countDistinct("customer_id").alias("unique_customers"),
+            count("*").alias("total_transactions")
+        )
+        .join(stores, "store_id", "left")
+        .withColumn(
+            "avg_transaction_value",
+            round(col("total_revenue") / col("total_transactions"), 2)
+        )
+    )
 
 # COMMAND ----------
 
@@ -319,34 +315,31 @@ def fact_returns():
 
 # COMMAND ----------
 
-# MAGIC %skip
-# MAGIC @dlt.table(
-# MAGIC     name=f"{catalog}.{config['gold_schema']}.agg_monthly_sales",
-# MAGIC     comment="Monthly sales trends",
-# MAGIC     table_properties={
-# MAGIC         "delta.liquidClusteredColumns": "year,month,store_id"
-# MAGIC     }
-# MAGIC )
-# MAGIC def agg_monthly_sales():
-# MAGIC
-# MAGIC     sales = dlt.read(f"{catalog}.{config['gold_schema']}.fact_sales")
-# MAGIC     products = dlt.read(f"{catalog}.{config['gold_schema']}.dim_product")
-# MAGIC
-# MAGIC     return (
-# MAGIC         sales
-# MAGIC         .join(products, "product_id", "left")
-# MAGIC         .withColumn("year", year("transaction_date"))
-# MAGIC         .withColumn("month", month("transaction_date"))
-# MAGIC         .groupBy("year", "month", "store_id", "product_brand")
-# MAGIC         .agg(
-# MAGIC             sum("quantity").alias("total_units"),
-# MAGIC             sum("total_revenue").alias("total_revenue"),
-# MAGIC             sum("total_cost").alias("total_cost"),
-# MAGIC             sum("total_profit").alias("total_profit"),
-# MAGIC             countDistinct("customer_id").alias("unique_customers"),
-# MAGIC             count("*").alias("total_transactions")
-# MAGIC         )
-# MAGIC     )
+
+@dlt.table(
+    name=f"{catalog}.{config['gold_schema']}.agg_monthly_sales",
+    comment="Monthly sales trends"
+)
+def agg_monthly_sales():
+
+    sales = dlt.read(f"{catalog}.{config['gold_schema']}.fact_sales")
+    products = dlt.read(f"{catalog}.{config['gold_schema']}.dim_product")
+
+    return (
+        sales
+        .join(products, "product_id", "left")
+        .withColumn("year", year("transaction_date"))
+        .withColumn("month", month("transaction_date"))
+        .groupBy("year", "month", "store_id", "product_brand")
+        .agg(
+            sum("quantity").alias("total_units"),
+            sum("total_revenue").alias("total_revenue"),
+            sum("total_cost").alias("total_cost"),
+            sum("total_profit").alias("total_profit"),
+            countDistinct("customer_id").alias("unique_customers"),
+            count("*").alias("total_transactions")
+        )
+    )
 
 # COMMAND ----------
 
@@ -355,41 +348,38 @@ def fact_returns():
 
 # COMMAND ----------
 
-# MAGIC %skip
-# MAGIC @dlt.table(
-# MAGIC     name=f"{catalog}.{config['gold_schema']}.agg_store_performance",
-# MAGIC     comment="Store performance",
-# MAGIC     table_properties={
-# MAGIC         "delta.liquidClusteredColumns": "store_id"
-# MAGIC     }
-# MAGIC )
-# MAGIC def agg_store_performance():
-# MAGIC
-# MAGIC     sales = dlt.read(f"{catalog}.{config['gold_schema']}.fact_sales")
-# MAGIC     returns = dlt.read(f"{catalog}.{config['gold_schema']}.fact_returns")
-# MAGIC
-# MAGIC     sales_agg = (
-# MAGIC         sales.groupBy("store_id")
-# MAGIC         .agg(
-# MAGIC             sum("quantity").alias("total_units_sold"),
-# MAGIC             sum("total_revenue").alias("total_revenue"),
-# MAGIC             sum("total_profit").alias("total_profit")
-# MAGIC         )
-# MAGIC     )
-# MAGIC
-# MAGIC     returns_agg = (
-# MAGIC         returns.groupBy("store_id")
-# MAGIC         .agg(sum("return_quantity").alias("total_units_returned"))
-# MAGIC     )
-# MAGIC
-# MAGIC     return (
-# MAGIC         sales_agg
-# MAGIC         .join(returns_agg, "store_id", "left")
-# MAGIC         .withColumn(
-# MAGIC             "return_rate",
-# MAGIC             round(col("total_units_returned") / col("total_units_sold") * 100, 2)
-# MAGIC         )
-# MAGIC     )
+
+@dlt.table(
+    name=f"{catalog}.{config['gold_schema']}.agg_store_performance",
+    comment="Store performance"
+)
+def agg_store_performance():
+
+    sales = dlt.read(f"{catalog}.{config['gold_schema']}.fact_sales")
+    returns = dlt.read(f"{catalog}.{config['gold_schema']}.fact_returns")
+
+    sales_agg = (
+        sales.groupBy("store_id")
+        .agg(
+            sum("quantity").alias("total_units_sold"),
+            sum("total_revenue").alias("total_revenue"),
+            sum("total_profit").alias("total_profit")
+        )
+    )
+
+    returns_agg = (
+        returns.groupBy("store_id")
+        .agg(sum("return_quantity").alias("total_units_returned"))
+    )
+
+    return (
+        sales_agg
+        .join(returns_agg, "store_id", "left")
+        .withColumn(
+            "return_rate",
+            round(col("total_units_returned") / col("total_units_sold") * 100, 2)
+        )
+    )
 
 # COMMAND ----------
 
