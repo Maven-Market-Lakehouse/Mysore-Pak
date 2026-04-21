@@ -77,6 +77,7 @@ def bronze_transactions():
         .withColumn("source_file_name", regexp_extract(col("_metadata.file_path"), r"([^/]+$)", 1))
         .withColumn("_source_system", lit("adls"))
     )
+        #.option("cloudFiles.includeExistingFiles", "true")
 
 # COMMAND ----------
 
@@ -102,6 +103,7 @@ def bronze_returns():
         .withColumn("source_file_name", regexp_extract(col("_metadata.file_path"), r"([^/]+$)", 1))
         .withColumn("_source_system", lit("adls"))
     )
+       # .option("cloudFiles.includeExistingFiles", "true")
 
 # COMMAND ----------
 
@@ -128,6 +130,8 @@ def bronze_stores():
         .withColumn("_source_system", lit("adls"))
     )
 
+        # .option("cloudFiles.includeExistingFiles", "true")
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -152,6 +156,7 @@ def bronze_regions():
         .withColumn("source_file_name", regexp_extract(col("_metadata.file_path"), r"([^/]+$)", 1))
         .withColumn("_source_system", lit("adls"))
     )
+        # .option("cloudFiles.includeExistingFiles", "true")
 
 # COMMAND ----------
 
@@ -177,3 +182,4 @@ def bronze_calendar():
         .withColumn("source_file_name", regexp_extract(col("_metadata.file_path"), r"([^/]+$)", 1))
         .withColumn("_source_system", lit("adls"))
     )
+        # .option("cloudFiles.includeExistingFiles", "true")

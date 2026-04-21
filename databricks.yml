@@ -1,4 +1,33 @@
 
+# # # bundle:
+# # #   name: maven-market-lakehouse
+
+# # # variables:
+# # #   workspace_root:
+# # #     default: /Workspace/Shared/maven-market-lakehouse
+
+# # # resources:
+# # #   pipelines:
+# # #     maven_market_dlt:
+# # #       name: maven-market-dlt-main
+# # #       catalog: maven_market_uc
+# # #       target: bronze
+# # #       channel: CURRENT
+# # #       photon: true
+# # #       continuous: false
+# # #       development: true
+# # #       libraries:
+# # #         - file:
+# # #             path: ./src/dlt/medallion_pipeline.py
+# # #       configuration:
+# # #         config.path: ${workspace.file_path}/config/config.yml
+
+# # # targets:
+# # #   main:
+# # #     mode: production
+# # #     workspace:
+# # #       host: ${env.DATABRICKS_HOST}
+# # #       root_path: ${var.workspace_root}
 # # bundle:
 # #   name: maven-market-lakehouse
 
@@ -8,109 +37,80 @@
 
 # # resources:
 # #   pipelines:
-# #     maven_market_dlt:
-# #       name: maven-market-dlt-main
+# #     maven_market_medallion_pipeline:
+# #       name: maven-market-medallion
+
 # #       catalog: maven_market_uc
-# #       target: bronze
-# #       channel: CURRENT
-# #       photon: true
+# #       #schema: silver   # main working schema
+# #       target: bronze   # initial target (DLT requirement)
+
+# #       photon: false
 # #       continuous: false
 # #       development: true
-# #       libraries:
-# #         - file:
-# #             path: ./src/dlt/medallion_pipeline.py
+# #       channel: CURRENT
+# #       #serverless: true
+# #       clusters:
+# #   - label: default
+
+# #     spark_version: "17.3.x-scala2.13"
+
+# #     node_type_id: "Standard_DC4as_v5"
+# #     driver_node_type_id: "Standard_DC4as_v5"
+
+# #     num_workers: 1   # equivalent to single node
+
+# #     autotermination_minutes: 20
+
+# #     spark_conf:
+# #       "spark.databricks.cluster.profile": "singleNode"
+# #       "spark.master": "local[*]"
+
+# #     custom_tags:
+# #       ResourceClass: "SingleNode"
+
 # #       configuration:
 # #         config.path: ${workspace.file_path}/config/config.yml
 
+# #       libraries:
+# #         # 🔶 BRONZE
+# #         - notebook:
+# #             path: ./src/dlt/01_Bronze_Pipeline/1_BRONZE_ADLS_INGESTION.py
+# #         - notebook:
+# #             path: ./src/dlt/01_Bronze_Pipeline/2_BRONZE_MONGO_INGESTION.py
+# #         - notebook:
+# #             path: ./src/dlt/01_Bronze_Pipeline/3_BRONZE_KAFKA_INGESTION.py
+
+# #         # 🔶 SILVER STAGE 1 (ADLS CLEANING)
+# #         - notebook:
+# #             path: ./src/dlt/02_Silver_Pipeline/1_SILVER_ADLS.py
+
+# #         # 🔶 SILVER STAGE 2 (STREAMING + MONGO)
+# #         - notebook:
+# #             path: ./src/dlt/02_Silver_Pipeline/2_SILVER_KAFKA.py
+# #         - notebook:
+# #             path: ./src/dlt/02_Silver_Pipeline/3_SILVER_MONGO.py
+
+# #         # # 🔶 SILVER STAGE 3 (INTEGRATION + SCD + FK)
+# #         # - notebook:
+# #         #     path: ./src/dlt/Silver_pipeline
+
+# #         # # 🔶 SILVER STAGE 4 (OBSERVABILITY)
+# #         # - notebook:
+# #         #     path: ./src/dlt/02 Silver_Pipeline/4_SILVER_OBSERVABILITY
+
+# #         # # 🔶 GOLD
+# #         # - notebook:
+# #         #     path: ./src/dlt/03 Gold_Pipeline/Gold Pipeline
+
+# #       run_as:
+# #         user_name: capstone.maven.market@gmail.com
+
 # # targets:
-# #   main:
-# #     mode: production
+# #   dev:
+# #     mode: development
 # #     workspace:
-# #       host: ${env.DATABRICKS_HOST}
-# #       root_path: ${var.workspace_root}
-# bundle:
-#   name: maven-market-lakehouse
-
-# variables:
-#   workspace_root:
-#     default: /Workspace/Shared/maven-market-lakehouse
-
-# resources:
-#   pipelines:
-#     maven_market_medallion_pipeline:
-#       name: maven-market-medallion
-
-#       catalog: maven_market_uc
-#       #schema: silver   # main working schema
-#       target: bronze   # initial target (DLT requirement)
-
-#       photon: false
-#       continuous: false
-#       development: true
-#       channel: CURRENT
-#       #serverless: true
-#       clusters:
-#   - label: default
-
-#     spark_version: "17.3.x-scala2.13"
-
-#     node_type_id: "Standard_DC4as_v5"
-#     driver_node_type_id: "Standard_DC4as_v5"
-
-#     num_workers: 1   # equivalent to single node
-
-#     autotermination_minutes: 20
-
-#     spark_conf:
-#       "spark.databricks.cluster.profile": "singleNode"
-#       "spark.master": "local[*]"
-
-#     custom_tags:
-#       ResourceClass: "SingleNode"
-
-#       configuration:
-#         config.path: ${workspace.file_path}/config/config.yml
-
-#       libraries:
-#         # 🔶 BRONZE
-#         - notebook:
-#             path: ./src/dlt/01_Bronze_Pipeline/1_BRONZE_ADLS_INGESTION.py
-#         - notebook:
-#             path: ./src/dlt/01_Bronze_Pipeline/2_BRONZE_MONGO_INGESTION.py
-#         - notebook:
-#             path: ./src/dlt/01_Bronze_Pipeline/3_BRONZE_KAFKA_INGESTION.py
-
-#         # 🔶 SILVER STAGE 1 (ADLS CLEANING)
-#         - notebook:
-#             path: ./src/dlt/02_Silver_Pipeline/1_SILVER_ADLS.py
-
-#         # 🔶 SILVER STAGE 2 (STREAMING + MONGO)
-#         - notebook:
-#             path: ./src/dlt/02_Silver_Pipeline/2_SILVER_KAFKA.py
-#         - notebook:
-#             path: ./src/dlt/02_Silver_Pipeline/3_SILVER_MONGO.py
-
-#         # # 🔶 SILVER STAGE 3 (INTEGRATION + SCD + FK)
-#         # - notebook:
-#         #     path: ./src/dlt/Silver_pipeline
-
-#         # # 🔶 SILVER STAGE 4 (OBSERVABILITY)
-#         # - notebook:
-#         #     path: ./src/dlt/02 Silver_Pipeline/4_SILVER_OBSERVABILITY
-
-#         # # 🔶 GOLD
-#         # - notebook:
-#         #     path: ./src/dlt/03 Gold_Pipeline/Gold Pipeline
-
-#       run_as:
-#         user_name: capstone.maven.market@gmail.com
-
-# targets:
-#   dev:
-#     mode: development
-#     workspace:
-#       host: https://adb-7405608624846971.11.azuredatabricks.net/
-#       root_path: ~/maven-market-lakehouse
+# #       host: https://adb-7405608624846971.11.azuredatabricks.net/
+# #       root_path: ~/maven-market-lakehouse
 
 bundle:
   name: maven-market-lakehouse
@@ -130,38 +130,29 @@ resources:
       photon: false
       continuous: false
       development: true
-      channel: CURRENT
+      # channel: CURRENT
 
-      clusters:
-        - label: default
-          spark_version: "17.3.x-scala2.13"
-          node_type_id: "Standard_DC4as_v5"
-          driver_node_type_id: "Standard_DC4as_v5"
-          num_workers: 1
-          autotermination_minutes: 20
-          spark_conf:
-            spark.databricks.cluster.profile: singleNode
-            spark.master: local[*]
-          custom_tags:
-            ResourceClass: SingleNode
+      serverless: true
 
       configuration:
         config.path: ${workspace.file_path}/config/config.yml
 
       libraries:
-        - file:
+        - notebook:
             path: ./src/dlt/01_Bronze_Pipeline/1_BRONZE_ADLS_INGESTION.py
-        - file:
+        - notebook:
             path: ./src/dlt/01_Bronze_Pipeline/2_BRONZE_MONGO_INGESTION.py
-        - file:
+        - notebook:
             path: ./src/dlt/01_Bronze_Pipeline/3_BRONZE_KAFKA_INGESTION.py
 
-        - file:
+        - notebook:
             path: ./src/dlt/02_Silver_Pipeline/1_SILVER_ADLS.py
-        - file:
+        - notebook:
             path: ./src/dlt/02_Silver_Pipeline/2_SILVER_KAFKA.py
-        - file:
+        - notebook:
             path: ./src/dlt/02_Silver_Pipeline/3_SILVER_MONGO.py
+        - notebook:
+            path: ./src/dlt/03_Gold_Pipeline/Gold(Neha).py
 
       run_as:
         user_name: capstone.maven.market@gmail.com
@@ -172,3 +163,71 @@ targets:
     workspace:
       host: https://adb-7405608624846971.11.azuredatabricks.net/
       root_path: ~/maven-market-lakehouse
+
+
+# bundle:
+#   name: maven-market-lakehouse
+
+# variables:
+#   workspace_root:
+#     default: /Workspace/Shared/maven-market-lakehouse
+
+# resources:
+#   pipelines:
+#     maven_market_medallion_pipeline:
+#       name: maven-market-medallion
+
+#       catalog: maven_market_uc
+#       target: bronze
+
+#       photon: false
+#       continuous: false
+#       development: true
+#       channel: CURRENT          # ✅ DLT manages Spark version via channel — no spark_version needed
+
+#       clusters:
+#         - label: default
+#           node_type_id: "Standard_DC4as_v5"
+#           driver_node_type_id: "Standard_DC4as_v5"
+#           num_workers: 1
+#           spark_conf:
+#             spark.databricks.cluster.profile: singleNode
+#             spark.master: local[*]
+#           custom_tags:
+#             ResourceClass: SingleNode
+#           # ❌ removed: spark_version    — invalid in DLT pipeline cluster
+#           # ❌ removed: autotermination_minutes — invalid in DLT pipeline cluster
+
+#       configuration:
+#         config.path: ${workspace.file_path}/config/config.yml
+
+#       libraries:
+#         # 🔶 BRONZE
+#         - notebook:             # ✅ changed from file: to notebook:
+#             path: ./src/dlt/01_Bronze_Pipeline/1_BRONZE_ADLS_INGESTION.py
+#         - notebook:
+#             path: ./src/dlt/01_Bronze_Pipeline/2_BRONZE_MONGO_INGESTION.py
+#         - notebook:
+#             path: ./src/dlt/01_Bronze_Pipeline/3_BRONZE_KAFKA_INGESTION.py
+
+#         # 🥈 SILVER
+#         - notebook:
+#             path: ./src/dlt/02_Silver_Pipeline/1_SILVER_ADLS.py
+#         - notebook:
+#             path: ./src/dlt/02_Silver_Pipeline/2_SILVER_KAFKA.py
+#         - notebook:
+#             path: ./src/dlt/02_Silver_Pipeline/3_SILVER_MONGO.py
+
+#         # # 🥇 GOLD
+#         # - notebook:
+#         #     path: ./src/dlt/03_Gold_Pipeline/Gold(Neha).py
+
+#       run_as:
+#         user_name: capstone.maven.market@gmail.com
+
+# targets:
+#   dev:
+#     mode: development
+#     workspace:
+#       host: https://adb-7405608624846971.11.azuredatabricks.net/
+#       root_path: ~/maven-market-lakehouse

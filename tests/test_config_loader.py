@@ -8,6 +8,10 @@ remain as raw strings (not resolved at load time).
 TODO: Add test_transformations.py once the DLT pipelines (Bronze,
       Silver, Gold) are running correctly. That file will cover
       unit tests for transformation logic and data quality rules.
+
+See also:
+    test_data_validator.py — unit tests for table_exists,
+    column_exists, and num_rows_for_value (data-validation helpers).
 """
 from utils.config_loader import load_config
 

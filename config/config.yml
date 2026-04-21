@@ -204,3 +204,116 @@ enable_cross_table_checks: true
 # SILVER TABLE LIST (OPTIONAL BUT USEFUL)
 # ---------------------------
 silver_tables: "silver_transactions,silver_returns,silver_stores,silver_regions,silver_calendar,silver_customers,silver_products,silver_dim_customers,silver_dim_products,silver_dim_stores"
+
+# ---------------------------
+# GOLD TABLE NAMES
+# ---------------------------
+# dim_customer: "dim_customer"
+# dim_product: "dim_product"
+# dim_store: "dim_store"
+# dim_calendar: "dim_calendar"
+
+# fact_sales: "fact_sales"
+# fact_returns: "fact_returns"
+
+# agg_daily_sales: "agg_daily_sales"
+# agg_monthly_sales: "agg_monthly_sales"
+# agg_customer_lifetime: "agg_customer_lifetime"
+# agg_product_performance: "agg_product_performance"
+# agg_store_performance: "agg_store_performance"
+# -------------------------------------------------------------------------------
+
+# gold_dim_customer: dim_customer
+# gold_dim_product: dim_product
+# gold_dim_store: dim_store
+
+# gold_fact_sales: fact_sales
+# gold_fact_returns: fact_returns
+
+# gold_agg_daily_sales: agg_daily_sales
+
+
+# # -------------------------
+# # PRIMARY KEYS (FOR SCD)
+# # -------------------------
+# customers_pk: customer_id
+# products_pk: product_id
+# stores_pk: store_id
+
+
+# # -------------------------
+# # SCD TRACKED COLUMNS
+# # -------------------------
+# stores_scd_columns:
+#   - store_name
+#   - store_city
+#   - store_state
+#   - region_id
+
+# customers_scd_columns:
+#   - customer_name
+#   - customer_city
+#   - customer_state_province
+#   - customer_country
+#   - marital_status
+#   - yearly_income
+#   - gender
+#   - education
+#   - occupation
+#   - homeowner
+
+# products_scd_columns:
+#   - product_name
+#   - product_brand
+#   - product_retail_price
+#   - product_cost
+#   - product_weight
+#   - recyclable
+#   - low_fat
+
+
+# # -------------------------
+# # DATA QUALITY RULES
+# # -------------------------
+# record_status_valid: valid
+# record_status_invalid: invalid
+# record_status_quarantine: quarantined
+
+
+# # -------------------------
+# # PIPELINE SETTINGS
+# # -------------------------
+# pipeline:
+#   trigger_mode: availableNow
+#   watermark_delay: "10 minutes"
+
+
+# # -------------------------
+# # CHECKPOINTS (FOR STREAMING)
+# # -------------------------
+# checkpoints:
+#   base_path: "/Volumes/maven_market_uc/try/checkpoints/"
+
+
+# # -------------------------
+# # SOURCE SYSTEM TAGS
+# # -------------------------
+# source_systems:
+#   adls: adls
+#   kafka: kafka
+#   mongo: mongo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -61,6 +61,10 @@ def bronze_orders():
         .format("kafka")
         .option("kafka.bootstrap.servers", kafka_server)
         .option("subscribe", config["orders_topic"])
+        .option("kafka.security.protocol", "SASL_SSL")
+        .option("kafka.sasl.mechanism", "PLAIN")
+        .option("kafka.sasl.jaas.config", 
+            f"kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required username='{kafka_api_key}' password='{kafka_secret}';")
         .option("startingOffsets", "earliest")
         .load()
         .selectExpr(
@@ -95,6 +99,10 @@ def bronze_inventory():
         .format("kafka")
         .option("kafka.bootstrap.servers", kafka_server)
         .option("subscribe", config["inventory_topic"])
+        .option("kafka.security.protocol", "SASL_SSL")
+        .option("kafka.sasl.mechanism", "PLAIN")
+        .option("kafka.sasl.jaas.config", 
+            f"kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required username='{kafka_api_key}' password='{kafka_secret}';")
         .option("startingOffsets", "earliest")
         .load()
         .selectExpr(
