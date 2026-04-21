@@ -25,7 +25,7 @@ jobs:
           pip install pyspark pyyaml pytest
           pip install -r requirements.txt
 
-      - name: Lint (non-blocking)
+      - name: Lint
         run: flake8 src tests --exit-zero
           
 
@@ -41,11 +41,11 @@ jobs:
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: databricks bundle validate -t main
+        run: databricks bundle validate -t dev
 
       - name: Bundle deploy
         if: github.event_name == 'push'
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: databricks bundle deploy -t main
+        run: databricks bundle deploy -t dev
