@@ -152,7 +152,7 @@ resources:
         - notebook:
             path: ./src/dlt/02_Silver_Pipeline/3_SILVER_MONGO.py
         - notebook:
-            path: ./src/dlt/03_Gold_Pipeline/Gold(Neha).py
+            path: ./src/dlt/03_Gold_Pipeline/1_Gold_Layer.py
 
       run_as:
         user_name: capstone.maven.market@gmail.com
