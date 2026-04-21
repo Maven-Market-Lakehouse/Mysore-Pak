@@ -49,7 +49,6 @@ def dim_product():
     return (
         dlt.read(silver("silver_scd_products"))
         .filter(col("__END_AT").isNull())
-
         .select(
             col("product_id"),
             col("product_name"),
