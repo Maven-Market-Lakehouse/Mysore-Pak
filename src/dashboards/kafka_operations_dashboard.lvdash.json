@@ -1,0 +1,91 @@
+{
+  "pages": [
+    {
+      "name": "Real-Time Kafka Operations",
+      "displayName": "Real-Time Kafka Operations Dashboard",
+      "layout": []
+    }
+  ],
+  "datasets": [
+    {
+      "name": "kpi_orders_per_minute",
+      "displayName": "KPI: Orders Per Minute",
+      "query": "SELECT ROUND(COUNT(*) / GREATEST(TIMESTAMPDIFF(MINUTE, MIN(timestamp), MAX(timestamp)), 1), 2) AS orders_per_minute FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS"
+    },
+    {
+      "name": "kpi_total_orders",
+      "displayName": "KPI: Total Orders",
+      "query": "SELECT COUNT(*) AS total_orders FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS"
+    },
+    {
+      "name": "kpi_latest_event",
+      "displayName": "KPI: Latest Event Timestamp",
+      "query": "SELECT MAX(timestamp) AS latest_event_time FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS"
+    },
+    {
+      "name": "kpi_streaming_lag",
+      "displayName": "KPI: Streaming Lag",
+      "query": "SELECT ROUND((UNIX_TIMESTAMP(current_timestamp()) - UNIX_TIMESTAMP(MAX(timestamp))) / 60, 2) AS lag_minutes FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS"
+    },
+    {
+      "name": "kpi_low_stock_alerts",
+      "displayName": "KPI: Low Stock Alerts",
+      "query": "SELECT COUNT(*) AS low_stock_alerts FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS AND quantity_remaining < 10"
+    },
+    {
+      "name": "orders_per_minute_trend",
+      "displayName": "Orders Per Minute Trend",
+      "query": "SELECT DATE_TRUNC('minute', timestamp) AS minute_bucket, COUNT(*) AS order_count FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY DATE_TRUNC('minute', timestamp) ORDER BY minute_bucket"
+    },
+    {
+      "name": "events_per_minute",
+      "displayName": "Events Per Minute (Orders vs Inventory)",
+      "query": "SELECT minute_bucket, event_type, event_count FROM (SELECT DATE_TRUNC('minute', timestamp) AS minute_bucket, 'Orders' AS event_type, COUNT(*) AS event_count FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY DATE_TRUNC('minute', timestamp) UNION ALL SELECT DATE_TRUNC('minute', timestamp) AS minute_bucket, 'Inventory' AS event_type, COUNT(*) AS event_count FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY DATE_TRUNC('minute', timestamp)) ORDER BY minute_bucket, event_type"
+    },
+    {
+      "name": "store_distribution",
+      "displayName": "Event Distribution by Store",
+      "query": "SELECT store_id, event_type, event_count FROM (SELECT store_id, 'Orders' AS event_type, COUNT(*) AS event_count FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY store_id UNION ALL SELECT store_id, 'Inventory' AS event_type, COUNT(*) AS event_count FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY store_id) ORDER BY store_id, event_type"
+    },
+    {
+      "name": "low_stock_by_store",
+      "displayName": "Low Stock Alerts by Store",
+      "query": "SELECT store_id, COUNT(*) AS low_stock_count FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS AND quantity_remaining < 10 GROUP BY store_id ORDER BY low_stock_count DESC LIMIT 20"
+    },
+    {
+      "name": "low_stock_by_product",
+      "displayName": "Low Stock Alerts by Product",
+      "query": "SELECT product_id, COUNT(*) AS low_stock_count FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS AND quantity_remaining < 10 GROUP BY product_id ORDER BY low_stock_count DESC LIMIT 20"
+    },
+    {
+      "name": "stock_level_distribution",
+      "displayName": "Stock Level Distribution",
+      "query": "SELECT CASE WHEN quantity_remaining < 10 THEN 'Low' WHEN quantity_remaining < 50 THEN 'Medium' ELSE 'High' END AS stock_bucket, COUNT(*) AS count FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY CASE WHEN quantity_remaining < 10 THEN 'Low' WHEN quantity_remaining < 50 THEN 'Medium' ELSE 'High' END ORDER BY stock_bucket"
+    },
+    {
+      "name": "latency_trend",
+      "displayName": "Event Time vs Ingest Time Delay Trend",
+      "query": "SELECT DATE_TRUNC('minute', timestamp) AS minute_bucket, ROUND(AVG(UNIX_TIMESTAMP(processing_timestamp) - UNIX_TIMESTAMP(event_timestamp)), 2) AS avg_delay_seconds FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS AND processing_timestamp IS NOT NULL AND event_timestamp IS NOT NULL GROUP BY DATE_TRUNC('minute', timestamp) ORDER BY minute_bucket"
+    },
+    {
+      "name": "duplicate_orders",
+      "displayName": "Duplicate Order Count",
+      "query": "SELECT SUM(CASE WHEN cnt > 1 THEN cnt - 1 ELSE 0 END) AS duplicate_count FROM (SELECT order_id, COUNT(*) AS cnt FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS GROUP BY order_id HAVING COUNT(*) > 1)"
+    },
+    {
+      "name": "null_critical_fields",
+      "displayName": "Null Critical Fields Count",
+      "query": "SELECT SUM(CASE WHEN order_id IS NULL THEN 1 ELSE 0 END + CASE WHEN product_id IS NULL THEN 1 ELSE 0 END + CASE WHEN store_id IS NULL THEN 1 ELSE 0 END) AS null_count FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS"
+    },
+    {
+      "name": "recent_orders",
+      "displayName": "Recent Orders",
+      "query": "SELECT order_id, product_id, store_id, quantity, order_channel, timestamp FROM maven_market_uc.silver.silver_orders WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS ORDER BY timestamp DESC LIMIT 50"
+    },
+    {
+      "name": "recent_inventory",
+      "displayName": "Recent Inventory Events",
+      "query": "SELECT inventory_id, product_id, store_id, quantity_remaining, stock_status, timestamp FROM maven_market_uc.silver.silver_inventory WHERE timestamp >= current_timestamp() - INTERVAL 2 HOURS ORDER BY timestamp DESC LIMIT 50"
+    }
+  ]
+}
