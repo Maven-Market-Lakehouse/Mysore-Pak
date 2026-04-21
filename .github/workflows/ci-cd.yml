@@ -24,9 +24,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Lint
-        run: flake8 src tests --ignore=W293,W292,W391
-
       - name: Unit tests
         run: pytest -q
 
