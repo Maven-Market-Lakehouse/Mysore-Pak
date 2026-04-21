@@ -26,8 +26,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Lint (non-blocking)
-        run: |
-          flake8 src tests || true
+        run: flake8 src tests --exit-zero
+          
 
       - name: Unit tests
         run: pytest -q || true
