@@ -68,3 +68,5 @@ def test_reads_correct_keys():
     assert "kafka-bootstrap" in keys_accessed
     assert "kafka-api-key" in keys_accessed
     assert "kafka-api-secret" in keys_accessed
+
+    

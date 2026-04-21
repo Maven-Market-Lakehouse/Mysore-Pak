@@ -7,3 +7,4 @@ def get_kafka_credentials(dbutils, config):
     api_secret = dbutils.secrets.get(scope, config["kafka"]["api_secret_name"])
 
     return bootstrap, api_key, api_secret
+    

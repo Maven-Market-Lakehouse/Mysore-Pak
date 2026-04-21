@@ -46,3 +46,4 @@ class StructuredLogger:
 
     def error(self, message, **kwargs):
         self._log(logging.ERROR, message, **kwargs)
+        

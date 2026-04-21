@@ -47,3 +47,5 @@ def test_logger_singleton():
     logger1 = get_logger()
     logger2 = get_logger()
     assert logger1 is logger2
+
+    

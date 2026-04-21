@@ -63,3 +63,4 @@ def test_base_config_datasets():
         assert "path" in config["datasets"][ds]
         assert "checkpoint" in config["datasets"][ds]
         assert "table" in config["datasets"][ds]
+

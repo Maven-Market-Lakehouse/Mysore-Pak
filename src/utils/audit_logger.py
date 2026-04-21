@@ -17,3 +17,5 @@ class AuditLogger:
         }]
         df = self.spark.createDataFrame(data)
         df.write.mode("append").saveAsTable(self.table)
+
+        
