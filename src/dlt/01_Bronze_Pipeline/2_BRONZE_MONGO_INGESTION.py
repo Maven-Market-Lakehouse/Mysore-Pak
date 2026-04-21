@@ -1,9 +1,5 @@
 # Databricks notebook source
-# MAGIC %md
-# MAGIC #IMPORTS + CONFIG LOAD + ENV ROUTER
-
-# COMMAND ----------
-
+# IMPORTS + CONFIG LOAD + ENV ROUTER
 import yaml
 from pyspark.sql.functions import *
 import dlt
@@ -16,28 +12,78 @@ def load_config(path="/Workspace/maven_market/Mysore-Pak/config/config.yml"):
         return yaml.safe_load(f)
 
 config = load_config()
-'''
-# -------------------------
-# ENV RESOLUTION
-# -------------------------
-def get_env():
-    try:
-        return spark.conf.get("env")
-    except:
-        return config.get("env", "dev")
-
-env = get_env()
-'''
-# -------------------------
-# CATALOG RESOLUTION
-# -------------------------
-#catalog = config[f"catalog_{env}"]
 catalog = config["catalog"]
+
 # -------------------------
-# TABLE BUILDER
+# BRONZE: STREAMING INGESTION
 # -------------------------
-def build_table_name(schema_key, table_key):
-    return f"{catalog}.{config[schema_key]}_{'' if schema_key.endswith('_schema') else ''}{config[schema_key]}.{config[table_key]}"
+
+@dlt.table(
+    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}",
+    comment="Streaming bronze ingestion for Mongo Customers via Fivetran"
+)
+def bronze_customers():
+    # Use readStream to ensure this becomes a Streaming Table
+    return (
+        spark.readStream.table("maven_market_uc.bronze.bronze_raw_customers")
+        .withColumn("ingestion_timestamp", current_timestamp())
+        .withColumn("_source_system", lit("fivetran"))
+    )
+
+@dlt.table(
+    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_products']}",
+    comment="Streaming bronze ingestion for Mongo Products via Fivetran"
+)
+def bronze_products():
+    # Use readStream to ensure this becomes a Streaming Table
+    return (
+        spark.readStream.table("maven_market_uc.bronze.bronze_raw_products")
+        .withColumn("ingestion_timestamp", current_timestamp())
+        .withColumn("_source_system", lit("fivetran"))
+    )
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #IMPORTS + CONFIG LOAD + ENV ROUTER
+
+# COMMAND ----------
+
+# MAGIC %skip
+# MAGIC import yaml
+# MAGIC from pyspark.sql.functions import *
+# MAGIC import dlt
+# MAGIC
+# MAGIC # -------------------------
+# MAGIC # LOAD CONFIG
+# MAGIC # -------------------------
+# MAGIC def load_config(path="/Workspace/maven_market/Mysore-Pak/config/config.yml"):
+# MAGIC     with open(path, "r") as f:
+# MAGIC         return yaml.safe_load(f)
+# MAGIC
+# MAGIC config = load_config()
+# MAGIC '''
+# MAGIC # -------------------------
+# MAGIC # ENV RESOLUTION
+# MAGIC # -------------------------
+# MAGIC def get_env():
+# MAGIC     try:
+# MAGIC         return spark.conf.get("env")
+# MAGIC     except:
+# MAGIC         return config.get("env", "dev")
+# MAGIC
+# MAGIC env = get_env()
+# MAGIC '''
+# MAGIC # -------------------------
+# MAGIC # CATALOG RESOLUTION
+# MAGIC # -------------------------
+# MAGIC #catalog = config[f"catalog_{env}"]
+# MAGIC catalog = config["catalog"]
+# MAGIC # -------------------------
+# MAGIC # TABLE BUILDER
+# MAGIC # -------------------------
+# MAGIC def build_table_name(schema_key, table_key):
+# MAGIC     return f"{catalog}.{config[schema_key]}_{'' if schema_key.endswith('_schema') else ''}{config[schema_key]}.{config[table_key]}"
 
 # COMMAND ----------
 
@@ -46,16 +92,17 @@ def build_table_name(schema_key, table_key):
 
 # COMMAND ----------
 
-@dlt.table(
-    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}"
-)
-def bronze_customers():
-
-    return (
-        spark.read.table("maven_market_uc.bronze.bronze_raw_customers")
-        .withColumn("ingestion_timestamp", current_timestamp())
-        .withColumn("_source_system", lit("fivetran"))
-    )
+# MAGIC %skip
+# MAGIC @dlt.table(
+# MAGIC     name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}"
+# MAGIC )
+# MAGIC def bronze_customers():
+# MAGIC
+# MAGIC     return (
+# MAGIC         spark.read.table("maven_market_uc.bronze.bronze_raw_customers")
+# MAGIC         .withColumn("ingestion_timestamp", current_timestamp())
+# MAGIC         .withColumn("_source_system", lit("fivetran"))
+# MAGIC     )
 
 # COMMAND ----------
 
@@ -64,16 +111,17 @@ def bronze_customers():
 
 # COMMAND ----------
 
-@dlt.table(
-    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_products']}"
-)
-def bronze_products():
-
-    return (
-        spark.read.table("maven_market_uc.bronze.bronze_raw_products")
-        .withColumn("ingestion_timestamp", current_timestamp())
-        .withColumn("_source_system", lit("fivetran"))
-    )
+# MAGIC %skip
+# MAGIC @dlt.table(
+# MAGIC     name=f"{catalog}.{config['bronze_schema']}.{config['bronze_products']}"
+# MAGIC )
+# MAGIC def bronze_products():
+# MAGIC
+# MAGIC     return (
+# MAGIC         spark.read.table("maven_market_uc.bronze.bronze_raw_products")
+# MAGIC         .withColumn("ingestion_timestamp", current_timestamp())
+# MAGIC         .withColumn("_source_system", lit("fivetran"))
+# MAGIC     )
 
 # COMMAND ----------
 
