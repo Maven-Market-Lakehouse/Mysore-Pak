@@ -118,7 +118,6 @@ products_data_schema = StructType([
 
 # COMMAND ----------
 
-
 @dlt.table(
     name=silver("silver_customers"),
     comment="Streaming silver customers from Mongo (flattened)"
@@ -238,7 +237,6 @@ def silver_products():
 # MAGIC ##SCD Type 2: Customers
 
 # COMMAND ----------
-
 
 dlt.create_streaming_table(silver("silver_scd_customers"))
 dlt.apply_changes(

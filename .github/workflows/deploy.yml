@@ -24,6 +24,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyspark pyyaml pytest
           pip install -r requirements.txt
+          pip install pyspark pytest pyyaml
+      
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
 
       - name: Lint
         run: flake8 src tests --exit-zero
