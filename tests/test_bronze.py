@@ -9,6 +9,14 @@ from utils import tbl
 import os
 import pytest
 
+import os
+import pytest
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skipping Databricks table tests in CI"
+)
+
 # -------------------------
 # UNIT TESTS
 # -------------------------

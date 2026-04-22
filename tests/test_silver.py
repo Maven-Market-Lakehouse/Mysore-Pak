@@ -2,6 +2,14 @@ from utils import *
 from pyspark.sql.functions import col, abs
 from utils import tbl
 
+import os
+import pytest
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skipping Databricks table tests in CI"
+)
+
 # =========================================================
 # 1) TRANSACTIONS
 # =========================================================

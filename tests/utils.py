@@ -27,6 +27,7 @@ def assert_reconciliation(lower_df, upper_df):
 
 
 def tbl(config, layer, name):
-    return f"{config['catalog']}.{config[f'{layer}_schema']}.{config[name]}"
+    # fallback: use name directly if not in config
+    table_name = config.get(name, name)
+    return f"{config['catalog']}.{config[f'{layer}_schema']}.{table_name}"
 
-    
