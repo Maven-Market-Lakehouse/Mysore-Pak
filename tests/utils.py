@@ -24,3 +24,9 @@ def assert_fk(df, dim_df, key):
 
 def assert_reconciliation(lower_df, upper_df):
     assert upper_df.count() <= lower_df.count()
+
+
+def tbl(config, layer, name):
+    return f"{config['catalog']}.{config[f'{layer}_schema']}.{config[name]}"
+
+    

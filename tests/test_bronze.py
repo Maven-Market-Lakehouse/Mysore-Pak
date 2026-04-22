@@ -5,7 +5,7 @@
 
 from utils import *
 from pyspark.sql.functions import col
-from tests.conftest import tbl
+from utils import tbl
 import os
 import pytest
 

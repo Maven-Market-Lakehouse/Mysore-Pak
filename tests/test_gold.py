@@ -1,6 +1,6 @@
 from utils import *
 from pyspark.sql.functions import col, abs
-from tests.conftest import tbl
+from utils import tbl
 
 # =========================================================
 # 1) DIMENSION TABLES
