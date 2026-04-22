@@ -1,52 +1,39 @@
 {
-  "name": "maven-market-cost-governance",
-  "definition": {
-    "cluster_type": {
-      "type": "fixed",
-      "value": "all-purpose"
-    },
-    "spark_version": {
-      "type": "allowlist",
-      "values": [
-        "15.4.x-scala2.12",
-        "14.3.x-scala2.12"
-      ],
-      "defaultValue": "15.4.x-scala2.12"
-    },
-    "node_type_id": {
-      "type": "allowlist",
-      "values": [
-        "Standard_F4s_v2",
-        "Standard_D4s_v5"
-      ],
-      "defaultValue": "Standard_D4s_v5"
-    },
-    "num_workers": {
-      "type": "range",
-      "minValue": 0,
-      "maxValue": 2,
-      "defaultValue": 1
-    },
-    "autotermination_minutes": {
-      "type": "fixed",
-      "value": 30,
-      "hidden": false
-    },
-    "custom_tags.project": {
-      "type": "fixed",
-      "value": "maven_market"
-    },
-    "custom_tags.environment": {
-      "type": "fixed",
-      "value": "main"
-    },
-    "enable_elastic_disk": {
-      "type": "fixed",
-      "value": true
-    },
-    "runtime_engine": {
-      "type": "fixed",
-      "value": "PHOTON"
-    }
+  "cluster_type": {
+    "type": "fixed",
+    "value": "all-purpose"
+  },
+  "data_security_mode": {
+    "type": "fixed",
+    "value": "USER_ISOLATION"
+  },
+  "num_workers": {
+    "type": "range",
+    "defaultValue": 1,
+    "maxValue": 2
+  },
+  "autotermination_minutes": {
+    "type": "fixed",
+    "value": 30
+  },
+  "node_type_id": {
+    "type": "allowlist",
+    "values": [
+      "Standard_DC4as_v5"
+    ],
+    "defaultValue": "Standard_DC4as_v5"
+  },
+  "spark_version": {
+    "type": "fixed",
+    "value": "17.3.x-scala2.13"
+  },
+  "runtime_engine": {
+    "type": "fixed",
+    "value": "PHOTON"
+  },
+  "custom_tags.project_policyyy": {
+    "type": "fixed",
+    "value": "maven_market"
   }
 }
+
