@@ -5,7 +5,9 @@
 
 from utils import *
 from pyspark.sql.functions import col
-
+from tests.conftest import tbl
+import os
+import pytest
 
 # -------------------------
 # UNIT TESTS
@@ -110,6 +112,10 @@ def test_bronze_row_count_non_zero(spark, config):
 
 
 # 2. SOURCE → BRONZE COUNT RECONCILIATION
+@pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skipping ADLS access in CI"
+)
 def test_source_to_bronze_count(spark, config):
     source_path = config["base_path"] + config["transactions_path"]
 
@@ -125,6 +131,10 @@ def test_source_to_bronze_count(spark, config):
 
 
 # 3. AGGREGATE RECONCILIATION
+@pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skipping ADLS access in CI"
+)
 def test_bronze_quantity_sum(spark, config):
     source_path = config["base_path"] + config["transactions_path"]
 
@@ -144,6 +154,10 @@ def test_bronze_quantity_sum(spark, config):
 
 
 # 4. KEY COVERAGE VALIDATION (COMPOSITE KEYS)
+@pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skipping ADLS access in CI"
+)
 def test_bronze_key_coverage(spark, config):
     source_path = config["base_path"] + config["transactions_path"]
 

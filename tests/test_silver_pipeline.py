@@ -26,7 +26,7 @@ from pyspark.sql.types import (
     StructType, StructField, StringType, IntegerType,
     LongType, DoubleType,
 )
-
+from tests.conftest import tbl
 
 # ============================================================
 # Fixtures
