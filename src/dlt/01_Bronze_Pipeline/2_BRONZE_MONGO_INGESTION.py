@@ -1,4 +1,59 @@
 # Databricks notebook source
+# # IMPORTS + CONFIG LOAD + ENV ROUTER
+# import yaml
+# from pyspark.sql.functions import *
+# import dlt
+
+# # -------------------------
+# # LOAD CONFIG
+# # -------------------------
+# def load_config(path="/Workspace/maven_market/Mysore-Pak/config/config.yml"):
+#     with open(path, "r") as f:
+#         return yaml.safe_load(f)
+
+# config = load_config()
+# catalog = config["catalog"]
+
+# # -------------------------
+# # BRONZE: STREAMING INGESTION
+# # -------------------------
+
+# @dlt.table(
+#     name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}",
+#     comment="Streaming bronze ingestion for Mongo Customers via Fivetran"
+# )
+# def bronze_customers():
+#     # Use readStream to ensure this becomes a Streaming Table
+#     return (
+#         spark.readStream.table("maven_market_uc.bronze.bronze_raw_customers")
+#         .withColumn("ingestion_timestamp", current_timestamp())
+#         .withColumn("_source_system", lit("fivetran"))
+#     )
+
+# @dlt.table(
+#     name=f"{catalog}.{config['bronze_schema']}.{config['bronze_products']}",
+#     comment="Streaming bronze ingestion for Mongo Products via Fivetran"
+# )
+# def bronze_products():
+#     # Use readStream to ensure this becomes a Streaming Table
+#     return (
+#         spark.readStream.table("maven_market_uc.bronze.bronze_raw_products")
+#         .withColumn("ingestion_timestamp", current_timestamp())
+#         .withColumn("_source_system", lit("fivetran"))
+#     )
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##DLT Bronze Layer
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #IMPORTS + CONFIG LOAD
+
+# COMMAND ----------
+
 # IMPORTS + CONFIG LOAD + ENV ROUTER
 import yaml
 from pyspark.sql.functions import *
@@ -13,39 +68,6 @@ def load_config(path="/Workspace/maven_market/Mysore-Pak/config/config.yml"):
 
 config = load_config()
 catalog = config["catalog"]
-
-# -------------------------
-# BRONZE: STREAMING INGESTION
-# -------------------------
-
-@dlt.table(
-    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}",
-    comment="Streaming bronze ingestion for Mongo Customers via Fivetran"
-)
-def bronze_customers():
-    # Use readStream to ensure this becomes a Streaming Table
-    return (
-        spark.readStream.table("maven_market_uc.bronze.bronze_raw_customers")
-        .withColumn("ingestion_timestamp", current_timestamp())
-        .withColumn("_source_system", lit("fivetran"))
-    )
-
-@dlt.table(
-    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_products']}",
-    comment="Streaming bronze ingestion for Mongo Products via Fivetran"
-)
-def bronze_products():
-    # Use readStream to ensure this becomes a Streaming Table
-    return (
-        spark.readStream.table("maven_market_uc.bronze.bronze_raw_products")
-        .withColumn("ingestion_timestamp", current_timestamp())
-        .withColumn("_source_system", lit("fivetran"))
-    )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC #IMPORTS + CONFIG LOAD + ENV ROUTER
 
 # COMMAND ----------
 
@@ -92,6 +114,22 @@ def bronze_products():
 
 # COMMAND ----------
 
+
+
+@dlt.table(
+    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}",
+    comment="Streaming bronze ingestion for Mongo Customers via Fivetran"
+)
+def bronze_customers():
+    # Use readStream to ensure this becomes a Streaming Table
+    return (
+        spark.readStream.table("maven_market_uc.bronze.bronze_raw_customers")
+        .withColumn("ingestion_timestamp", current_timestamp())
+        .withColumn("_source_system", lit("fivetran"))
+    )
+
+# COMMAND ----------
+
 # MAGIC %skip
 # MAGIC @dlt.table(
 # MAGIC     name=f"{catalog}.{config['bronze_schema']}.{config['bronze_customers']}"
@@ -108,6 +146,20 @@ def bronze_products():
 
 # MAGIC %md
 # MAGIC ##PRODUCTS
+
+# COMMAND ----------
+
+@dlt.table(
+    name=f"{catalog}.{config['bronze_schema']}.{config['bronze_products']}",
+    comment="Streaming bronze ingestion for Mongo Products via Fivetran"
+)
+def bronze_products():
+    # Use readStream to ensure this becomes a Streaming Table
+    return (
+        spark.readStream.table("maven_market_uc.bronze.bronze_raw_products")
+        .withColumn("ingestion_timestamp", current_timestamp())
+        .withColumn("_source_system", lit("fivetran"))
+    )
 
 # COMMAND ----------
 

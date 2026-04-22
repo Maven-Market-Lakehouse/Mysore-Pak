@@ -1,3 +1,8 @@
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
 bundle:
   name: maven-market-lakehouse
 
@@ -38,8 +43,12 @@ resources:
         - notebook:
             path: ./src/dlt/02_Silver_Pipeline/3_SILVER_MONGO.py
         - notebook:
+<<<<<<< Updated upstream
             path: ./src/dlt/03_Gold_Pipeline/1_Gold_Layer.py
 
+=======
+            path: ./src/dlt/03_Gold_Pipeline/1_Dimension_Modelling.py
+>>>>>>> Stashed changes
 
       run_as:
         user_name: capstone.maven.market@gmail.com
@@ -50,3 +59,7 @@ targets:
     workspace:
       host: https://adb-7405608624846971.11.azuredatabricks.net/
       root_path: ~/maven-market-lakehouse
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes

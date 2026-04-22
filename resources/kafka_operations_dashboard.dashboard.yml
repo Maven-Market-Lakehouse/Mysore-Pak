@@ -1,8 +1,0 @@
-resources:
-  dashboards:
-    kafka_operations_dashboard:
-      display_name: Real-Time Kafka Operations Dashboard
-      file_path: ../src/dashboards/kafka_operations_dashboard.lvdash.json
-      warehouse_id: ${var.warehouse_id}
-      dataset_catalog: maven_market_uc
-      dataset_schema: silver

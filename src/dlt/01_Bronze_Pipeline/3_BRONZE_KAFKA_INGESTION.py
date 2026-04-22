@@ -4,6 +4,16 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ### Summary of the notebook:
+# MAGIC  - Loads configuration from a YAML file to resolve environment, catalog, schema, and table names.
+# MAGIC  - Defines two Lakeflow Declarative Pipelines streaming tables:
+# MAGIC    1. bronze_raw_orders: Ingests raw order data from Kafka, adds ingestion timestamp and source system metadata.
+# MAGIC    2. bronze_raw_inventory: Ingests raw inventory data from Kafka, adds ingestion timestamp and source system metadata.
+# MAGIC  - Uses Lakeflow Declarative Pipelines (@dlt.table) to manage streaming ingestion and table creation.
+
+# COMMAND ----------
+
 import yaml
 from pyspark.sql.functions import *
 import dlt
@@ -51,7 +61,6 @@ def build_table_name(schema_key, table_key):
     name=f"{catalog}.{config['bronze_schema']}.bronze_raw_orders"
 )
 def bronze_orders():
-
     kafka_server = dbutils.secrets.get(scope=config["kafka_scope"], key=config["kafka_bootstrap_key"])
     kafka_api_key = dbutils.secrets.get(scope=config["kafka_scope"], key=config["kafka_api_key_name"])
     kafka_secret = dbutils.secrets.get(scope=config["kafka_scope"], key=config["kafka_api_secret_name"])
