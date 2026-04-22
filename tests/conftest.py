@@ -1,5 +1,6 @@
 import os
 import yaml
+import pytest
 
 @pytest.fixture(scope="session")
 def config():
