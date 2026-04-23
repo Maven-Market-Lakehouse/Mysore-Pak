@@ -174,7 +174,7 @@ def quarantine_filter(df, rules):
     name=silver("silver_inventory"),
     comment="Parsed Kafka inventory with validation, deduplication, and stock intelligence"
 )
-@dlt.expect_or_drop("valid_product", "product_id IS NOT NULL")
+@dlt.expect_or_fail("valid_product", "product_id IS NOT NULL")
 @dlt.expect_or_drop("valid_store", "store_id IS NOT NULL")
 @dlt.expect("valid_stock", "quantity_remaining >= 0")
 def silver_inventory():
