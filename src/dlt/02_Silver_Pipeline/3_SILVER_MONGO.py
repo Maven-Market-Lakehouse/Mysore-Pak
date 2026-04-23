@@ -1,6 +1,126 @@
 # Databricks notebook source
+# DBTITLE 1,Notebook Summary
 # MAGIC %md
-# MAGIC #DLT Silver Layer Pipeline
+# MAGIC # Silver Layer Pipeline — MongoDB Source
+# MAGIC
+# MAGIC > **Catalog:** `maven_market_uc` (dynamic from YAML) &nbsp;|&nbsp; **Schema:** `silver` &nbsp;|&nbsp; **Source:** MongoDB Bronze tables &nbsp;|&nbsp; **Framework:** Lakeflow Spark Declarative Pipelines (`import dlt`)
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## Purpose
+# MAGIC
+# MAGIC This notebook is a **Lakeflow Spark Declarative Pipeline** that promotes raw MongoDB data from Bronze to Silver. It takes opaque JSON blobs ingested from MongoDB, parses and flattens them into strongly-typed columnar tables, deduplicates records, and then applies **SCD Type 2** change-data-capture to preserve full attribute history.
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## Pipeline Architecture
+# MAGIC
+# MAGIC ```
+# MAGIC ┌─────────────────────────┐       ┌──────────────────────────────┐       ┌─────────────────────────────────┐
+# MAGIC │   BRONZE (raw JSON)     │       │        SILVER (clean)        │       │      SILVER SCD2 (history)      │
+# MAGIC │                         │       │                              │       │                                 │
+# MAGIC │  bronze_customers ──────┼──────►│  silver_customers            │──────►│  silver_scd_customers           │
+# MAGIC │  bronze_products  ──────┼──────►│  silver_products             │──────►│  silver_scd_products            │
+# MAGIC │                         │       │                              │       │                                 │
+# MAGIC │  (JSON in `data` col)   │       │  parse → flatten → dedup     │       │  apply_changes (SCD Type 2)     │
+# MAGIC └─────────────────────────┘       └──────────────────────────────┘       └─────────────────────────────────┘
+# MAGIC ```
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## Cell-by-Cell Breakdown
+# MAGIC
+# MAGIC | Cell | Section | What It Does |
+# MAGIC |---|---|---|
+# MAGIC | **4** | Imports & Setup | Loads `dlt`, `yaml`, PySpark functions and types |
+# MAGIC | **6** | Load Config | Reads `config.yml`; builds helper functions `tbl()` and `silver()` for fully-qualified table names |
+# MAGIC | **7** | Pipeline Logger | Initializes `PipelineLogger` (custom utility) for structured pipeline observability |
+# MAGIC | **9** | Define Schemas | Declares `StructType` schemas for **customers** (20 fields) and **products** (9 fields) |
+# MAGIC | **11** | `silver_customers` | Streaming table: parse JSON → flatten → derive `customer_name` → cast dates → dedup → add metadata |
+# MAGIC | **13** | `silver_products` | Streaming table: parse JSON → flatten → trim `product_name` → dedup → add metadata |
+# MAGIC | **15** | SCD2 Customers | `apply_changes` — tracks history on 10 attributes (name, city, state, country, etc.) |
+# MAGIC | **17** | SCD2 Products | `apply_changes` — tracks history on 7 attributes (name, brand, price, cost, weight, etc.) |
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## Transformation Detail
+# MAGIC
+# MAGIC ### `silver_customers` — Streaming Table
+# MAGIC
+# MAGIC | Stage | Operation | Details |
+# MAGIC |---|---|---|
+# MAGIC | **Parse** | `from_json(col("data"), schema)` | Converts raw JSON string into a struct |
+# MAGIC | **Flatten** | `.select(col("parsed_data.*"))` | Promotes nested fields to top-level columns |
+# MAGIC | **Derive** | `concat_ws(" ", first_name, last_name)` | Creates `customer_name` |
+# MAGIC | **Type Cast** | `to_date("birthdate", "M/d/yyyy")` | Converts `birthdate` and `acct_open_date` from string to `DateType` |
+# MAGIC | **Dedup** | `dropDuplicates(["customer_id"])` | Ensures exactly one row per customer |
+# MAGIC | **Metadata** | `pipeline_run_id`, `processing_timestamp` | Lineage and auditability columns |
+# MAGIC
+# MAGIC ### `silver_products` — Streaming Table
+# MAGIC
+# MAGIC | Stage | Operation | Details |
+# MAGIC |---|---|---|
+# MAGIC | **Parse** | `from_json(col("data"), schema)` | Converts raw JSON string into a struct |
+# MAGIC | **Flatten** | `.select(col("parsed_data.*"))` | Promotes nested fields to top-level columns |
+# MAGIC | **Clean** | `trim(col("product_name"))` | Strips leading/trailing whitespace |
+# MAGIC | **Dedup** | `dropDuplicates(["product_id"])` | Ensures exactly one row per product |
+# MAGIC | **Metadata** | `pipeline_run_id`, `processing_timestamp` | Lineage and auditability columns |
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## SCD Type 2 — Change Data Capture
+# MAGIC
+# MAGIC Both SCD tables use `dlt.apply_changes()` with identical configuration patterns:
+# MAGIC
+# MAGIC | Parameter | Customers | Products |
+# MAGIC |---|---|---|
+# MAGIC | **Key** | `customer_id` | `product_id` |
+# MAGIC | **Sequence By** | `processing_timestamp` | `processing_timestamp` |
+# MAGIC | **SCD Type** | 2 (full history) | 2 (full history) |
+# MAGIC | **Tracked Columns** | 10 attributes | 7 attributes |
+# MAGIC | **Null Handling** | `ignore_null_updates=True` | `ignore_null_updates=True` |
+# MAGIC
+# MAGIC > SCD Type 2 means every change to a tracked attribute creates a **new row** with validity timestamps (`__START_AT`, `__END_AT`), preserving the complete history of changes.
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## Schema Overview
+# MAGIC
+# MAGIC ### Customers (20 source fields + 4 derived/metadata)
+# MAGIC
+# MAGIC | Column | Type | Notes |
+# MAGIC |---|---|---|
+# MAGIC | `customer_id` | `string` | Cast from MongoDB `_id` |
+# MAGIC | `customer_acct_num` | `long` | |
+# MAGIC | `first_name`, `last_name` | `string` | |
+# MAGIC | `customer_name` | `string` | **Derived**: first + last |
+# MAGIC | `customer_address/city/state/postal/country` | mixed | Geographic fields |
+# MAGIC | `birthdate`, `acct_open_date` | `date` | **Cast** from `M/d/yyyy` strings |
+# MAGIC | `marital_status`, `yearly_income`, `gender` | `string` | Demographics |
+# MAGIC | `total_children`, `num_children_at_home` | `int` | |
+# MAGIC | `education`, `member_card`, `occupation`, `homeowner` | `string` | |
+# MAGIC | `ingestion_timestamp`, `_source_system` | inherited | From Bronze |
+# MAGIC | `pipeline_run_id`, `processing_timestamp` | `timestamp` | Silver metadata |
+# MAGIC
+# MAGIC ### Products (9 source fields + 2 metadata)
+# MAGIC
+# MAGIC | Column | Type | Notes |
+# MAGIC |---|---|---|
+# MAGIC | `product_id` | `string` | Cast from MongoDB `_id` |
+# MAGIC | `product_brand`, `product_name` | `string` | Name is **trimmed** |
+# MAGIC | `product_sku` | `long` | |
+# MAGIC | `product_retail_price`, `product_cost`, `product_weight` | `double` | |
+# MAGIC | `recyclable`, `low_fat` | `int` | Boolean-like flags |
+# MAGIC | `pipeline_run_id`, `processing_timestamp` | `timestamp` | Silver metadata |
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## Key Design Decisions
+# MAGIC
+# MAGIC * **YAML-driven config** — catalog, schema, and table names are never hard-coded; a single `config.yml` governs the entire pipeline
+# MAGIC * **MongoDB `_id` as primary key** — used instead of the nested `customer_id`/`product_id` inside the JSON payload (original fields are commented out)
+# MAGIC * **`ignore_null_updates=True`** — prevents null values in partial updates from overwriting valid existing data
+# MAGIC * **Structured logging** — `PipelineLogger` emits structured log entries for observability and debugging across pipeline runs
 
 # COMMAND ----------
 
