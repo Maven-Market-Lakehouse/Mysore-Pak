@@ -68,6 +68,19 @@ def silver(name):
 
 # COMMAND ----------
 
+# DBTITLE 1,Pipeline Logger
+# -------------------------
+# PIPELINE LOGGER
+# -------------------------
+import sys
+sys.path.insert(0, "/Workspace/maven_market/Mysore-Pak/src")
+from utils.custom_logger import PipelineLogger
+
+logger = PipelineLogger(spark, config, buffer_size=3, echo=True)
+logger.log_info("Silver Mongo Pipeline — registering tables: customers, products + SCD customers, SCD products", layer="silver")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##Define Schemas
 
@@ -263,7 +276,14 @@ dlt.apply_changes(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ##SCD Type 2: Products
+# MAGIC ## SCD Type 2: Products
+# MAGIC
+# MAGIC - **silver_scd_products** is a streaming table that tracks historical changes to product attributes using SCD Type 2.
+# MAGIC - **dlt.create_streaming_table** creates the target table for streaming CDC operations.
+# MAGIC - **dlt.apply_changes** applies change data capture (CDC) from the silver_products source, using product_id as the key and processing_timestamp for sequencing.
+# MAGIC - The table retains history for key product attributes (e.g., product_name, product_brand, price, cost, weight, recyclable, low_fat).
+# MAGIC - **ignore_null_updates=True** ensures that null values in updates do not overwrite existing values.
+# MAGIC - This setup enables robust tracking of product changes over time, supporting audit and analytics use cases.
 
 # COMMAND ----------
 

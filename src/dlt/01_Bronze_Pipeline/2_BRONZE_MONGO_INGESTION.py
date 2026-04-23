@@ -71,6 +71,19 @@ catalog = config["catalog"]
 
 # COMMAND ----------
 
+# DBTITLE 1,Pipeline Logger
+# -------------------------
+# PIPELINE LOGGER
+# -------------------------
+import sys
+sys.path.insert(0, "/Workspace/maven_market/Mysore-Pak/src")
+from utils.custom_logger import PipelineLogger
+
+logger = PipelineLogger(spark, config, buffer_size=3, echo=True)
+logger.log_info("Bronze Mongo Pipeline — registering tables: customers, products", layer="bronze")
+
+# COMMAND ----------
+
 # MAGIC %skip
 # MAGIC import yaml
 # MAGIC from pyspark.sql.functions import *

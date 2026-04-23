@@ -65,6 +65,20 @@ def silver(name):
 
 # COMMAND ----------
 
+# DBTITLE 1,Pipeline Logger
+# -------------------------
+# PIPELINE LOGGER
+# -------------------------
+import sys
+sys.path.insert(0, "/Workspace/maven_market/Mysore-Pak/src")
+from utils.custom_logger import PipelineLogger
+
+logger = PipelineLogger(spark, config, buffer_size=3, echo=True)
+logger.log_info("Silver Kafka Pipeline — registering tables: orders, inventory + valid/quarantine splits", layer="silver")
+logger.log_info("DQ expectations: valid_product, valid_store, valid_stock, valid_order_id, valid_customer, positive_qty", layer="silver")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##Orders Schema
 

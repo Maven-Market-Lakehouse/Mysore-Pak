@@ -56,6 +56,19 @@ def silver(name):
 
 # COMMAND ----------
 
+# DBTITLE 1,Pipeline Logger
+# -------------------------
+# PIPELINE LOGGER
+# -------------------------
+import sys
+sys.path.insert(0, "/Workspace/maven_market/Mysore-Pak/src")
+from utils.custom_logger import PipelineLogger
+
+logger = PipelineLogger(spark, config, buffer_size=3, echo=True)
+logger.log_info("Gold Pipeline — registering tables: dim_customer, dim_product, dim_store, fact_sales, fact_returns, agg_daily_sales, agg_monthly_sales, agg_store_performance, agg_return_kpi", layer="gold")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##Dimension Table - Customers
 
@@ -215,99 +228,6 @@ def fact_sales():
         #     "sales_amount"
         # )
     )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC
-
-# COMMAND ----------
-
-# MAGIC %skip
-# MAGIC @dlt.table(
-# MAGIC     name=f"{catalog}.{config['gold_schema']}.fact_sales",
-# MAGIC     comment="Gold Fact - Sales"
-# MAGIC )
-# MAGIC def fact_sales():
-# MAGIC
-# MAGIC     # Transactions
-# MAGIC     tx = dlt.read(silver("silver_transactions_valid")).select(
-# MAGIC         "product_id",
-# MAGIC         "customer_id",
-# MAGIC         "store_id",
-# MAGIC         col("transaction_date"),
-# MAGIC         "quantity"
-# MAGIC     )
-# MAGIC
-# MAGIC     # Orders → FIX COLUMN NAME HERE
-# MAGIC     orders = dlt.read(silver("silver_orders_valid")).select(
-# MAGIC         "product_id",
-# MAGIC         "customer_id",
-# MAGIC         "store_id",
-# MAGIC         col("stock_date").alias("transaction_date"),   # 🔥 FIX
-# MAGIC         "quantity"
-# MAGIC     )
-# MAGIC
-# MAGIC     # Now union works
-# MAGIC     df = tx.unionByName(orders)
-# MAGIC
-# MAGIC     prod = dlt.read(silver("silver_scd_products")) \
-# MAGIC         .filter(col("__END_AT").isNull()) \
-# MAGIC         .select("product_id", "product_retail_price")
-# MAGIC
-# MAGIC     return (
-# MAGIC         df
-# MAGIC         .join(prod, "product_id", "left")
-# MAGIC         .withColumn(
-# MAGIC             "sales_amount",
-# MAGIC             col("quantity") * col("product_retail_price")
-# MAGIC         )
-# MAGIC     )
-
-# COMMAND ----------
-
-# DBTITLE 1,Cell 4
-# MAGIC %skip
-# MAGIC @dlt.table(
-# MAGIC     name=f"{catalog}.{config['gold_schema']}.fact_sales",
-# MAGIC     comment="Gold Fact - Sales"
-# MAGIC )
-# MAGIC def fact_sales():
-# MAGIC
-# MAGIC     tx = dlt.read(silver("silver_transactions_valid"))
-# MAGIC
-# MAGIC     orders = dlt.read(silver("silver_orders_valid")).select(
-# MAGIC         "product_id",
-# MAGIC         "customer_id",
-# MAGIC         "store_id",
-# MAGIC         col("order_date").alias("transaction_date"),
-# MAGIC         "quantity"
-# MAGIC     )
-# MAGIC
-# MAGIC     df = tx.unionByName(orders)
-# MAGIC     prod = dlt.read(silver("silver_scd_products")) \
-# MAGIC         .filter(col("__END_AT").isNull()) \
-# MAGIC         .select("product_id", "product_retail_price")
-# MAGIC
-# MAGIC     return (
-# MAGIC         df
-# MAGIC         .join(prod, "product_id", "left")
-# MAGIC
-# MAGIC         .withColumn(
-# MAGIC             "sales_amount",
-# MAGIC             col("quantity") * col("product_retail_price")
-# MAGIC         )
-# MAGIC
-# MAGIC         .select(
-# MAGIC             
-# MAGIC             col("transaction_date"),
-# MAGIC             col("customer_id"),
-# MAGIC             col("product_id"),
-# MAGIC             col("store_id"),
-# MAGIC             col("quantity"),
-# MAGIC             col("sales_amount")
-# MAGIC         )
-# MAGIC     )
 
 # COMMAND ----------
 

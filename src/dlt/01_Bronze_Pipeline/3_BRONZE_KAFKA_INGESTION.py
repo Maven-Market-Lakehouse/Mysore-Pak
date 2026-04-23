@@ -52,6 +52,19 @@ def build_table_name(schema_key, table_key):
 
 # COMMAND ----------
 
+# DBTITLE 1,Pipeline Logger
+# -------------------------
+# PIPELINE LOGGER
+# -------------------------
+import sys
+sys.path.insert(0, "/Workspace/maven_market/Mysore-Pak/src")
+from utils.custom_logger import PipelineLogger
+
+logger = PipelineLogger(spark, config, buffer_size=3, echo=True)
+logger.log_info("Bronze Kafka Pipeline — registering tables: orders, inventory", layer="bronze")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##BRONZE: KAFKA (ORDERS)
 

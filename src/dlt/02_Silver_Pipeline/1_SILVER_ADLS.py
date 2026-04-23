@@ -50,6 +50,20 @@ def silver(name):
 
 # COMMAND ----------
 
+# DBTITLE 1,Pipeline Logger
+# -------------------------
+# PIPELINE LOGGER
+# -------------------------
+import sys
+sys.path.insert(0, "/Workspace/maven_market/Mysore-Pak/src")
+from utils.custom_logger import PipelineLogger
+
+logger = PipelineLogger(spark, config, buffer_size=3, echo=True)
+logger.log_info("Silver ADLS Pipeline — registering tables: transactions, stores, regions, calendar, returns + SCD stores + quarantine", layer="silver")
+logger.log_info("DQ expectations: valid_quantity, valid_customer, valid_product, valid_date, valid_store, valid_region", layer="silver")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##Silver Transactions Table
 
